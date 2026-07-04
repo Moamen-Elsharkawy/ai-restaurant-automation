@@ -1,0 +1,457 @@
+{
+  "name": "Restaurant digital transformation",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1-CcvzIZHIfiWNiYWsUk8Dmnn-bbHVkOH",
+          "mode": "list",
+          "cachedResultName": "Restaurant kb",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1-CcvzIZHIfiWNiYWsUk8Dmnn-bbHVkOH"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        -64
+      ],
+      "id": "4c5f465a-bb2b-4147-83f9-455d01bdf1bf",
+      "name": "Google Drive Trigger",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "name": "Google Drive OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        368,
+        -80
+      ],
+      "id": "d8b99b3d-0435-4274-a646-c8514da56f5e",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.file_id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        192,
+        -80
+      ],
+      "id": "ec387bd2-736c-41d1-9fdd-a06c58c0b047",
+      "name": "Download file",
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "name": "Google Drive OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "edb445b9-999d-4e6b-b37e-a9783b0c6369",
+              "name": "file_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "d1e016e7-3c34-4a96-8640-72324d447083",
+              "name": "file_name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -16,
+        -64
+      ],
+      "id": "2f90c0d8-97cd-4b4e-b023-b8d7f876708d",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "restaurent",
+          "mode": "list",
+          "cachedResultName": "restaurent"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        1088,
+        -256
+      ],
+      "id": "28d86a46-20f4-44fe-83e0-8ad493ad1250",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "name": "Supabase account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1024,
+        -96
+      ],
+      "id": "9ee4040d-a59a-4898-8497-22ffbf30511a",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $('Split Out').item.json.content }}{{ $('Split Out').item.json.content }}",
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        1216,
+        -96
+      ],
+      "id": "73fb7896-c3e9-4ecb-acc1-a03e7aae84fd",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8423209b-d5d2-4898-8d8f-61cf46153b6d",
+              "leftValue": "={{ $('Download file').item.json.file_name }}",
+              "rightValue": "menu.md",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        544,
+        -80
+      ],
+      "id": "9ff5ab80-2993-464e-9601-3478d1bd196a",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "const menuText = $input.first().json.data;\n\nconst lines = menuText\n  .split('\\n')\n  .map(line => line.trim())\n  .filter(line => line !== '');\n\nlet restaurantName = '';\nlet currentCategory = '';\nconst chunks = {};\nlet chunkCounter = 1;\n\n// Get restaurant name\nfor (const line of lines) {\n  if (line.startsWith('# ') && !line.startsWith('## ')) {\n    restaurantName = line.replace(/^# /, '').trim();\n    break;\n  }\n}\n\n// Parse menu items\nfor (let i = 0; i < lines.length; i++) {\n  const line = lines[i];\n\n  if (line.startsWith('## ')) {\n    currentCategory = line.replace(/^## /, '').trim();\n    continue;\n  }\n\n  const match = line.match(/^\\*\\*(.+?)\\*\\*\\s+\\*\\*(.+?)\\*\\*$/);\n\n  if (match) {\n    const productName = match[1].trim();\n    const price = match[2].trim();\n    const description = lines[i + 1] ? lines[i + 1].trim() : '';\n\n    chunks[`chunk${chunkCounter}`] = {\n      content: `${productName}. Category: ${currentCategory}. Price: ${price}. Description: ${description}`,\n      metadata: {\n        restaurant_name: restaurantName || 'Not provided',\n        category: currentCategory || 'Not provided',\n        product_name: productName,\n        price: price\n      }\n    };\n\n    chunkCounter++;\n  }\n}\n\nreturn [\n  {\n    json: {\n      chunks\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        -272
+      ],
+      "id": "f205efbd-c705-4f9a-9f32-0d6414675331",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "chunks",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        880,
+        -256
+      ],
+      "id": "42a89845-4e8e-4b65-89ab-68840ad6472b",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "chunkSize": 2000000,
+        "chunkOverlap": 200
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1216,
+        80
+      ],
+      "id": "e59f57f0-6117-40a2-bf5f-4fdb2b4f2b29",
+      "name": "Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "restaurent",
+          "mode": "list",
+          "cachedResultName": "restaurent"
+        },
+        "options": {
+          "queryName": "match_documents"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        736,
+        16
+      ],
+      "id": "fc0bbccd-a585-41dd-b064-ab0b54501ae5",
+      "name": "Supabase Vector Store1",
+      "credentials": {
+        "supabaseApi": {
+          "name": "Supabase account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        704,
+        224
+      ],
+      "id": "69df1525-bd33-411d-a91d-b58057693d7d",
+      "name": "Embeddings OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        928,
+        208
+      ],
+      "id": "4a996fe1-e2ea-40c2-9b3c-2c0f1438e712",
+      "name": "Default Data Loader1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader1": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "gaofNGCUYYAdlIcc",
+  "tags": [
+    {
+      "updatedAt": "2026-04-13T12:54:52.047Z",
+      "createdAt": "2026-04-13T12:54:52.047Z",
+      "id": "txL1kHAMwPjkvbyh",
+      "name": "restaurant"
+    }
+  ]
+}

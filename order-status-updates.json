@@ -1,0 +1,211 @@
+{
+  "name": "Order status updates",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1G0eqiTP8SXXMGcXvnV23qbzJGpETOuZrcuj0_HZBWDI",
+          "mode": "list",
+          "cachedResultName": "orders",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SPREADSHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_SPREADSHEET_ID"
+        },
+        "event": "rowUpdate",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "cbd3f958-9241-4bcc-b876-05c93f034347",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "name": "Google Sheets Trigger OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d3bc3bed-fc3e-46b1-a375-f8bd87679ca6",
+              "leftValue": "={{ $json.Status }}",
+              "rightValue": "=In Kitchen",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "9aaaf249-fc01-4132-b916-8e77c7180965",
+              "leftValue": "={{ $json.Status }}",
+              "rightValue": "=Shipped",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "95beeb7e-84d4-4670-8e8b-ea37544f13c6",
+              "leftValue": "={{ $json.Status }}",
+              "rightValue": "=Delivered",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "56150139-171d-42ad-8144-39fad881ebba",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e52f4e45-c06e-4010-9d8b-8c8df75be0ad",
+              "leftValue": "={{ $json.chatId }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        -16
+      ],
+      "id": "04de214f-2e35-432f-877d-c7d61462d314",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Google Sheets Trigger').item.json.chatId }}",
+        "text": "={{\n$json.Status === \"In Kitchen\"\n? `👨‍🍳 Order Update #${$json[\"Order ID\"]}\n\nHello ${$json.Name},\nyour order is now being prepared in the kitchen.\n\n🍽 Items: ${$json.Item}\n💰 Price: ${$json.Price} EGP`\n\n: $json.Status === \"Shipped\"\n? `🛵 Order Update #${$json[\"Order ID\"]}\n\nHello ${$json.Name},\nyour order is on the way.\n\n📍 Address: ${$json.Address}\n🍽 Items: ${$json.Item}\n💰 Price: ${$json.Price} EGP`\n\n: $json.Status === \"Delivered\"\n? `✅ Order Update #${$json[\"Order ID\"]}\n\nHello ${$json.Name},\nyour order has been delivered.\n\nWe hope you enjoy your meal!`\n\n: `📦 Order Update #${$json[\"Order ID\"]}\n\nHello ${$json.Name},\nyour order status is now: ${$json.Status}`\n}}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        688,
+        -32
+      ],
+      "id": "3484a178-c074-475e-accc-e273c1a758f2",
+      "name": "Send a text message",
+      "credentials": {
+        "telegramApi": {
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "availableInMCP": false
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "gpRxMoWyGr4KCp9p",
+  "tags": [
+    {
+      "name": "restaurant",
+      "id": "txL1kHAMwPjkvbyh",
+      "updatedAt": "2026-04-13T12:54:52.047Z",
+      "createdAt": "2026-04-13T12:54:52.047Z"
+    }
+  ]
+}

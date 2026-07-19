@@ -1,8 +1,14 @@
 # AI Restaurant Automation
 
-Zero-staff restaurant ordering: customers ask about the menu, place orders, and get delivery status updates entirely through a Telegram bot backed by a RAG knowledge base, with orders logged and the kitchen notified instantly.
+Zero-staff restaurant ordering on Telegram: customers ask about the menu, place orders, and get delivery status updates through one bot backed by a RAG knowledge base, with every order logged and the kitchen notified instantly.
 
-**Demo video:** https://youtu.be/u7ePA5cPpBs
+![AI Restaurant Automation](https://raw.githubusercontent.com/Moamen-Elsharkawy/portfolio-assets/main/covers/restaurant-automation.png)
+
+**[Watch the demo](https://youtu.be/u7ePA5cPpBs)**
+
+## The problem
+
+Every shift, a restaurant spends staff time on the same repetitive work: answering the same menu questions, taking orders by phone or chat, relaying them to the kitchen, and fielding "where is my order" messages. Each of those touches needs a person, so busy periods turn into wait times, mistakes, and missed sales. This system moves all of it onto a single Telegram bot, so the restaurant can take and track orders without staffing the channel.
 
 ## What it does
 
@@ -10,6 +16,28 @@ Zero-staff restaurant ordering: customers ask about the menu, place orders, and 
 - Captures complete orders in conversation and writes them to Google Sheets
 - Notifies the kitchen the moment an order lands
 - Lets customers check their delivery status by asking the bot
+
+## Architecture
+
+```mermaid
+flowchart TD
+    Files[Restaurant files: menu, brochure] --> Ingest[Chunk and embed]
+    Ingest --> KB[(Knowledge base / vector store)]
+
+    Customer[Customer on Telegram] --> Agent{Conversational agent}
+    Agent -->|Menu question| RAG[RAG lookup over knowledge base]
+    KB --> RAG
+    RAG --> Agent
+    Agent -->|Places order| Sheet[Order logged to Google Sheets]
+    Sheet --> Kitchen[Kitchen notified instantly]
+    Agent -->|Asks delivery status| Status[Status lookup against the orders sheet]
+    Sheet --> Status
+    Status --> Agent
+```
+
+## Stack
+
+n8n, Telegram Bot API, OpenAI (chat + embeddings), RAG over a vector store, Google Sheets.
 
 ## Workflows
 
@@ -21,10 +49,6 @@ Zero-staff restaurant ordering: customers ask about the menu, place orders, and 
 
 `sample-menu.md`, `sample-menu.pdf`, and `sample-brochure.pdf` are the sample source documents the knowledge base is built from.
 
-## Stack
-
-n8n, Telegram Bot API, OpenAI (chat + embeddings), RAG over a vector store, Google Sheets.
-
 ## Import and setup
 
 1. Import each JSON into n8n (Workflows, Import from File).
@@ -35,6 +59,10 @@ n8n, Telegram Bot API, OpenAI (chat + embeddings), RAG over a vector store, Goog
 ## Note on redaction
 
 All credentials, webhook IDs, spreadsheet IDs, and personal identifiers have been replaced with self-describing placeholders. The workflow logic is exactly what runs in the demo.
+
+## License
+
+Released under the MIT License. See [LICENSE](LICENSE).
 
 ---
 

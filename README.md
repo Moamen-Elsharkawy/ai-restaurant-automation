@@ -1,6 +1,15 @@
 # AI Restaurant Automation
 
-Zero-staff restaurant ordering on Telegram: customers ask about the menu, place orders, and get delivery status updates through one bot backed by a RAG knowledge base, with every order logged and the kitchen notified instantly.
+## Project status and evidence
+
+**Portfolio build.** Personal demonstration. No operating restaurant, staffing reduction or 24/7 reliability claim.
+
+**My contribution:** Built a demo of menu retrieval, structured order capture, kitchen notification and status messages.
+
+**Verification:** Recorded demo and public workflow exports.
+
+
+A personal restaurant-ordering demonstration on Telegram: customers ask about the menu, place orders, and get delivery status updates through one bot backed by a RAG knowledge base, with every order logged and the kitchen notified instantly.
 
 ![AI Restaurant Automation](https://raw.githubusercontent.com/Moamen-Elsharkawy/portfolio-assets/main/covers/restaurant-automation.png)
 
@@ -8,7 +17,7 @@ Zero-staff restaurant ordering on Telegram: customers ask about the menu, place 
 
 ## The problem
 
-Every shift, a restaurant spends staff time on the same repetitive work: answering the same menu questions, taking orders by phone or chat, relaying them to the kitchen, and fielding "where is my order" messages. Each of those touches needs a person, so busy periods turn into wait times, mistakes, and missed sales. This system moves all of it onto a single Telegram bot, so the restaurant can take and track orders without staffing the channel.
+Every shift, a restaurant spends staff time on the same repetitive work: answering the same menu questions, taking orders by phone or chat, relaying them to the kitchen, and fielding "where is my order" messages. Each of those touches needs a person, so busy periods turn into wait times, mistakes, and missed sales. This system moves all of it onto a single Telegram bot, so the restaurant can take and track orders through a demonstrated conversational workflow.
 
 ## What it does
 
